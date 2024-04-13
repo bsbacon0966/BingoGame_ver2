@@ -3,6 +3,7 @@ import 'PlayerPage.dart';
 import 'HostPage.dart';
 import 'before_play.dart';
 //ver3.0 update
+//adding better warning animation
 void main() {
   runApp(const MyApp());
 }
