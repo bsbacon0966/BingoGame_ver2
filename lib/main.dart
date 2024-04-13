@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'PlayerPage.dart';
 import 'HostPage.dart';
 import 'before_play.dart';
-
+//ver3.0 update
 void main() {
   runApp(const MyApp());
 }
