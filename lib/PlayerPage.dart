@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:lottie/lottie.dart';
+import 'package:quickalert/quickalert.dart';
 
 class PlayerPage extends StatefulWidget {
-  final String username;
-  final List<List<String>> bingoCard;
-
-  PlayerPage({Key? key, required this.username, required this.bingoCard}) : super(key: key);
 
   @override
   _PlayerPageState createState() => _PlayerPageState();
@@ -16,7 +13,9 @@ class _PlayerPageState extends State<PlayerPage> {
   late IO.Socket socket;
   late List<List<bool>> buttonStates;
   late List<List<String>> buttonText;
+  late String language;
   List<String> bingoNumbers = List.filled(6, " ");
+  List<bool> has_open_number = List.filled(26,false);
   bool waiting = true;
   bool game_start = false;
   bool animate = false;
@@ -27,30 +26,48 @@ class _PlayerPageState extends State<PlayerPage> {
   void initState() {
     super.initState();
     buttonStates = List.generate(5, (_) => List.filled(5, false));
-    buttonText = widget.bingoCard;
+    buttonText = List.generate(5, (_) => List.filled(5, " "));
     connectToNode("player");
   }
 
   Widget buildElevatedButton(int row, int col) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        minimumSize: Size(65, 40),
+        shape: CircleBorder(),
+        padding: EdgeInsets.all(18),
         backgroundColor: buttonStates[row][col] ? Colors.red[300] : Colors.teal[400],
       ),
       onPressed: () {
         setState(() {
-          buttonStates[row][col] = !buttonStates[row][col];
+          if(has_open_number[int.parse(buttonText[row][col])]==false){
+            QuickAlert.show(
+              context: context,
+              type: QuickAlertType.warning,
+              text: language == 'en' ?'You cannot click on numbers that have not yet been drawn.':'你不能點選還未開出的數字',
+            );
+          }
+          else buttonStates[row][col] = !buttonStates[row][col];
         });
       },
       child: Text(
         buttonText[row][col],
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(
+            color: Colors.white,
+            fontSize: 23
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final element = ModalRoute
+        .of(context)!
+        .settings
+        .arguments as Map<String, dynamic>;
+    final String username = element['username'];
+    buttonText= element['buttomText'];
+    language = element['language'];
     var buttonSpacing = 5.0;
     return Scaffold(
       body: Center(
@@ -63,7 +80,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 children: [
                   Container(
                     child: Text(
-                      'Waiting host to start the game...',
+                      language == 'en' ? 'Waiting host to start the game...':'等待主持人開始遊戲',
                       style: TextStyle(fontSize: 22),
                     ),
                   ),
@@ -81,7 +98,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'The last five drawn numbers:', style: TextStyle(fontSize: 22.0),  textAlign: TextAlign.left,),
+                    language == 'en' ?'The last five drawn numbers:':'上五個數:', style: TextStyle(fontSize: 22.0),  textAlign: TextAlign.left,),
                   Row(
                     children: [
                       BingoBall(number: bingoNumbers[1]),
@@ -101,7 +118,7 @@ class _PlayerPageState extends State<PlayerPage> {
                     color: Colors.red,
                   ),
                   Text(
-                    'NOW bingo numbers:', style: TextStyle(fontSize: 27.0),  textAlign: TextAlign.left,),
+                    language == 'en' ?'NOW bingo numbers:':'現在開出:', style: TextStyle(fontSize: 27.0),  textAlign: TextAlign.left,),
                   Container(
                     width: 80,
                     height: 80,
@@ -122,9 +139,9 @@ class _PlayerPageState extends State<PlayerPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height:60.0),
+                  SizedBox(height:40.0),
                   Text(
-                    'Press the button to record',
+                    language == 'en' ?'Press the button to record':'按下按鈕紀錄賓果卡',
                     style: TextStyle(fontSize: 27.0),
                   ),
                   for (int row = 0; row < 5; row++)
@@ -136,12 +153,13 @@ class _PlayerPageState extends State<PlayerPage> {
                             padding: EdgeInsets.symmetric(horizontal: buttonSpacing),
                             child: buildElevatedButton(row, col),
                           ),
+                        SizedBox(height: 60),
                       ],
                     ),
                   ElevatedButton(
                     onPressed: () {
                       if(bingo_judge_is_win_or_not()){
-                        socket.emit('player_has_bingo',widget.username);
+                        socket.emit('player_has_bingo',username);
                         setState(() {
                           win = true;
                         });
@@ -149,14 +167,14 @@ class _PlayerPageState extends State<PlayerPage> {
                       else{
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('You must have 3 lines to win the game'),
+                            content: Text(language == 'en' ?'You must have 3 lines to win the game':'你必須要有三條連線'),
                             duration: Duration(seconds: 2),
                           ),
                         );
                       }
                     },
                     child: Text(
-                        'send BINGO to host',
+                        language == 'en' ?'send BINGO to host':'和主持人說賓果',
                         style: TextStyle(fontSize: 30.0)
                     ),
                     style: ElevatedButton.styleFrom(
@@ -174,7 +192,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 child: Column(
                     children: [
                       Text(
-                          end_message,
+                          language == 'en' ?'player ${end_message} has 3 lines':'玩家 ${end_message}連成三條線',
                           style: TextStyle(fontSize: 30.0)
                       ),
                       Visibility(
@@ -182,11 +200,13 @@ class _PlayerPageState extends State<PlayerPage> {
                           child:Column(
                               children: [
                                 Lottie.asset('assets/animation/cele.json'),
-                                Text("You're the winner",style:
-                                TextStyle(fontSize: 30.0,color:Colors.red)
+                                Text(
+                                    language == 'en' ?"You're the winner":'你是贏家',
+                                    style: TextStyle(fontSize: 30.0,color:Colors.red)
                                 ),
-                                Text("Congratulations!",style:
-                                TextStyle(fontSize: 30.0,color:Colors.red)
+                                Text(
+                                    language == 'en' ?"Congratulations!":'恭喜你!',
+                                    style: TextStyle(fontSize: 30.0,color:Colors.red)
                                 )
                               ]
                           )
@@ -286,6 +306,7 @@ class _PlayerPageState extends State<PlayerPage> {
             bingoNumbers[2] = bingoNumbers[1];
             bingoNumbers[1] = bingoNumbers[0];
             bingoNumbers[0] = data;
+            has_open_number[int.parse(data)] = true;
           });
         });
       });
@@ -294,7 +315,7 @@ class _PlayerPageState extends State<PlayerPage> {
       setState(() {
         game_start = false;
         end = true;
-        end_message = "player ${data} has three lines";
+        end_message = data;
       });
     });
   }

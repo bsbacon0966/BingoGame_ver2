@@ -4,17 +4,15 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:socket_io_common/src/util/event_emitter.dart';
 
 class HostPage extends StatefulWidget {
-  final String username;
-  HostPage({Key? key, required this.username}) : super(key: key);
+
   @override
   _HostPageState createState() => _HostPageState();
 }
 
 class _HostPageState extends State<HostPage> {
   late IO.Socket socket;
-  String identify = " ";
-  String countFromServer = "0";
-  String gameState = 'There is 0 player ready!';
+  String countFromServer = '0';
+  String gameState = '0';
   String end_message = ' ';
   bool isButtonVisible = false;
   bool game_play = false;
@@ -77,8 +75,20 @@ class _HostPageState extends State<HostPage> {
   @override
   Widget build(BuildContext context) {
     var buttonSpacing = 5.0;
-    identify = "You(${widget.username}) are the host.";
-
+    final element = ModalRoute
+        .of(context)!
+        .settings
+        .arguments as Map<String, dynamic>;
+    final String username = element['username'];
+    final String language = element['language'];
+    String identify = ' ';
+    if(language == 'en'){
+      if(gameState=='0'||gameState=='1') identify = 'There is ${gameState} player';
+      else identify = 'There are ${gameState} player';
+    }
+    else{
+      identify = '現在有${gameState}玩家';
+    }
     return Scaffold(
       body: Center(
         child: Column(
@@ -89,11 +99,11 @@ class _HostPageState extends State<HostPage> {
               child: Column(
                 children: [
                   Text(
-                    identify,
+                    language == 'en' ?'Welcome , ${username}':'歡迎 , ${username}',
                     style: TextStyle(color: Colors.black, fontSize: 25.0),
                   ),
                   Text(
-                    "Please wait...",
+                    language == 'en' ?"Please wait...":'請稍微等待...',
                     style: TextStyle(color: Colors.black, fontSize: 35.0),
                   ),
                   SizedBox(
@@ -102,7 +112,7 @@ class _HostPageState extends State<HostPage> {
                     child: Lottie.asset('assets/animation/waiting.json',frameRate: FrameRate.max,),
                   ),
                   Text(
-                    gameState,
+                    identify,
                     style: TextStyle(color: Colors.black, fontSize: 27.0),
                   ),
                 ],
@@ -120,7 +130,9 @@ class _HostPageState extends State<HostPage> {
                   });
                 },
                 child: Text(
-                    'Let the game BEGIN!!', style: TextStyle(fontSize: 30.0)),
+                    language == 'en' ?'Let the game BEGIN!!':'讓遊戲開始吧!!',
+                    style: TextStyle(fontSize: 30.0)
+                ),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.red,
@@ -134,7 +146,10 @@ class _HostPageState extends State<HostPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'The last five drawn numbers:', style: TextStyle(fontSize: 22.0),  textAlign: TextAlign.left,),
+                    language == 'en' ?'The last five drawn numbers:':'上五個開出的數字',
+                    style: TextStyle(fontSize: 22.0),
+                    textAlign: TextAlign.left,
+                  ),
                   Row(
                     children: [
                       BingoBall(number: bingoNumbers[1]),
@@ -154,7 +169,10 @@ class _HostPageState extends State<HostPage> {
                     color: Colors.red,
                   ),
                   Text(
-                    'NOW bingo numbers:', style: TextStyle(fontSize: 27.0),  textAlign: TextAlign.left,),
+                    language == 'en' ?'NOW bingo numbers:':'現在開出的數字:',
+                    style: TextStyle(fontSize: 27.0),
+                    textAlign: TextAlign.left,
+                  ),
                   Container(
                     width: 80,
                     height: 80,
@@ -177,7 +195,7 @@ class _HostPageState extends State<HostPage> {
                   ),
                   SizedBox(height: 60),
                   Text(
-                    'Press buttom to send the number',
+                    language == 'en' ? 'Press buttom to send the number':'按下按鈕發送數字',
                     style: TextStyle(fontSize: 22.0),
                   ),
                   SizedBox(height: 20),
@@ -202,14 +220,14 @@ class _HostPageState extends State<HostPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "GAME END",
+                      language == 'en' ?"GAME END":'遊戲結束',
                       style: TextStyle(
                         fontSize: 40.0,
                         color: Colors.red,
                       ),
                     ),
                     Text(
-                      end_message,
+                      language == 'en' ?'Player ${end_message} win the game':'玩家${end_message}贏下遊戲',
                       style: TextStyle(
                         fontSize: 30.0,
                         color: Colors.red,
@@ -244,9 +262,9 @@ class _HostPageState extends State<HostPage> {
       setState(() {
         countFromServer = data.toString();
         if (countFromServer == "0" || countFromServer == "1") {
-          gameState = 'There is $countFromServer player ready up!';
+          gameState = countFromServer;
         } else {
-          gameState = 'There are $countFromServer players ready up!';
+          gameState = countFromServer;
         }
         if (countFromServer == "1") {
           isButtonVisible = true;
@@ -257,7 +275,7 @@ class _HostPageState extends State<HostPage> {
       setState(() {
         end_game = true;
         game_play = false;
-        end_message = "player ${data} has three lines";
+        end_message = data;
       });
     });
     socket.on('disconnect', (_) {

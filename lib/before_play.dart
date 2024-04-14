@@ -23,7 +23,8 @@ class _BeforePlayState extends State<BeforePlay> {
   Widget buildElevatedButton(int row, int col) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        minimumSize: Size(65, 40),
+        shape: CircleBorder(),
+        padding: EdgeInsets.all(18),
         backgroundColor: buttonStates[row][col] ? Colors.red[300] : Colors.teal[400],
       ),
       onPressed: () {
@@ -39,7 +40,10 @@ class _BeforePlayState extends State<BeforePlay> {
       },
       child: Text(
         buttonText[row][col],
-        style: TextStyle(color: Colors.white),
+        style: TextStyle(
+            color: Colors.white ,
+            fontSize: 23
+        ),
       ),
     );
   }
@@ -53,6 +57,7 @@ class _BeforePlayState extends State<BeforePlay> {
         .settings
         .arguments as Map<String, dynamic>;
     final String username = element['username'];
+    final String language = element['language'];
     return Scaffold(
       body: Center(
         child: Column(
@@ -63,16 +68,16 @@ class _BeforePlayState extends State<BeforePlay> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Welcome , ${username}',style: TextStyle(fontSize: 22.0)),
-                  Text('Press buttom to fill the bingo card!',style: TextStyle(fontSize: 22.0)),
-                  Text('Now number : ${number}',style: TextStyle(fontSize: 30.0)),
+                  Text(language == 'en' ? 'Welcome , ${username}' : '歡迎玩家 ${username}',style: TextStyle(fontSize: 22.0)),
+                  Text(language == 'en' ? 'Press buttom to fill the bingo card!' : '按按鈕填入數字',style: TextStyle(fontSize: 22.0)),
+                  Text(language == 'en' ? 'Now number : ${number}' : '現在數字 : ${number}',style: TextStyle(fontSize: 30.0)),
                 ],
               ),
             ),
-            SizedBox(height: 100),
+            SizedBox(height: 15),
             Visibility(
               visible: isFilled,
-              child:Text('Ready or not!',style: TextStyle(fontSize: 40.0)),
+              child:Text(language == 'en' ?'Ready or not!':'準備好了嗎?',style: TextStyle(fontSize: 40.0)),
             ),
             SizedBox(height: 50),
             for (int row = 0; row < 5; row++)
@@ -84,6 +89,7 @@ class _BeforePlayState extends State<BeforePlay> {
                       padding: EdgeInsets.symmetric(horizontal: buttonSpacing),
                       child: buildElevatedButton(row, col),
                     ),
+                  SizedBox(height: 70),
                 ],
               ),
             SizedBox(height: 30),
@@ -94,16 +100,21 @@ class _BeforePlayState extends State<BeforePlay> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          setState(() {
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => PlayerPage(
-                                username: username,
-                                bingoCard: buttonText,
+                          Map<String, dynamic> data = {
+                            'username': username,
+                            'language': language,
+                            'buttomText':buttonText,
+                          };
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => PlayerPage(),
+                              settings: RouteSettings(
+                                arguments: data,
                               ),
-                            ));
-                          });
+                            ),
+                          );
                         },
-                        child: Text('Ready!',style: TextStyle(fontSize: 30.0)),
+                        child: Text(language == 'en' ?'Ready!':'準備好了',style: TextStyle(fontSize: 30.0)),
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
                           backgroundColor: Colors.red,
@@ -123,7 +134,7 @@ class _BeforePlayState extends State<BeforePlay> {
                             }
                           });
                         },
-                        child: Text('Reset the bingo card!',style: TextStyle(fontSize: 25.0)),
+                        child: Text(language == 'en' ?'Reset the bingo card!':'清空以重新填寫!',style: TextStyle(fontSize: 25.0)),
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
                           backgroundColor: Colors.black12,
@@ -157,7 +168,7 @@ class _BeforePlayState extends State<BeforePlay> {
                         isFilled = true;
                       });
                     },
-                    child: Text('random filled number',style: TextStyle(fontSize: 25.0)),
+                    child: Text(language == 'en' ?'random filled number':'電腦隨機填數',style: TextStyle(fontSize: 25.0)),
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
