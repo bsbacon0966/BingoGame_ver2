@@ -1,6 +1,10 @@
-# bingo_game_ver3
+# BingoGame_ver3
 
-A new Flutter project.
+Version 3.0 is an improved version of the work BingoGame---using-flutter-and-node.js, with more features added.
+- adding better warning animation
+- adding button to translate the entire game into Chinese and English.
+- making bingo card's button more 'circle'
+- Adding player button to judge and prevent players from cheating.
 
 ## Getting Started
 
