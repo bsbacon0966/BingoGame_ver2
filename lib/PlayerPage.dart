@@ -22,6 +22,10 @@ class _PlayerPageState extends State<PlayerPage> {
   bool win = false;
   bool end = false;
   String end_message = " ";
+  bool emoji_initial = true;
+  bool has_emoji = false;
+  int emoji_ID = -1;
+  String message_sender = " ";
   @override
   void initState() {
     super.initState();
@@ -34,7 +38,7 @@ class _PlayerPageState extends State<PlayerPage> {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         shape: CircleBorder(),
-        padding: EdgeInsets.all(18),
+        padding: EdgeInsets.all(16),
         backgroundColor: buttonStates[row][col] ? Colors.red[300] : Colors.teal[400],
       ),
       onPressed: () {
@@ -132,17 +136,123 @@ class _PlayerPageState extends State<PlayerPage> {
                     ),
                     child: Center(
                       child: AnimatedContainer(
-                        duration: Duration(milliseconds: 200), // 动画持续时间
+                        duration: Duration(milliseconds: 200),
                         curve: Curves.easeInOut,
                         transform: animate ? Matrix4.translationValues(0.0, -5.0, 0.0) : Matrix4.translationValues(0.0, 0.0, 0.0),
                         child: BingoBall(number: bingoNumbers[0]),
                       ),
                     ),
                   ),
-                  SizedBox(height:40.0),
-                  Text(
-                    language == 'en' ?'Press the button to record':'按下按鈕紀錄賓果卡',
-                    style: TextStyle(fontSize: 27.0),
+                  Visibility(
+                    visible: emoji_initial,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children:[
+                        Visibility(
+                            visible: has_emoji,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: Row(
+                                children:[
+                                  Text(
+                                    '${message_sender}:',
+                                    style: TextStyle(fontSize: 25),
+                                  ),
+                                  SizedBox(width: 8.0),
+                                  Image.asset(
+                                    emoji_ID == 1 ? 'assets/images.jpg' : 'assets/oops.jpg',
+                                    width: 24.0,
+                                    height: 24.0,
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ),
+                        Spacer(),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              emoji_initial = false;
+                            });
+                          },
+                          child: Text(
+                            'emoji',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          style: ButtonStyle(
+                            fixedSize: MaterialStateProperty.all<Size>(
+                              Size(100.0, 60.0),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Visibility(
+                    visible: !emoji_initial,
+                    child: Container(
+                      color: Colors.black26,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children:[
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                emoji_initial = true;
+                                socket.emit('cool_emoji',username);
+                              });
+                            },
+                            child: Image.asset(
+                              'assets/images.jpg',
+                              width: 30.0,
+                              height: 30.0,
+                            ),
+                            style: ButtonStyle(
+                              fixedSize: MaterialStateProperty.all<Size>(
+                                Size(100.0, 60.0),
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                emoji_initial = true;
+                                socket.emit('oops_emoji',username);
+                              });
+                            },
+                            child: Image.asset(
+                              'assets/oops.jpg',
+                              width: 30.0,
+                              height: 30.0,
+                            ),
+                            style: ButtonStyle(
+                              fixedSize: MaterialStateProperty.all<Size>(
+                                Size(100.0, 60.0),
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                emoji_initial = true;
+                              });
+                            },
+                            child:  Text(
+                              'X',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            style: ButtonStyle(
+                              fixedSize: MaterialStateProperty.all<Size>(
+                                Size(100.0, 60.0),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   for (int row = 0; row < 5; row++)
                     Row(
@@ -316,6 +426,30 @@ class _PlayerPageState extends State<PlayerPage> {
         game_start = false;
         end = true;
         end_message = data;
+      });
+    });
+    socket.on('cool_emoji_receive', (data) {
+      setState(() {
+        message_sender = data;
+        emoji_ID = 1;
+        has_emoji = true;
+      });
+      Future.delayed(Duration(seconds: 3), () {
+        setState(() {
+          has_emoji = false; // 3秒后将 has_emoji 的值从 true 转换为 false
+        });
+      });
+    });
+    socket.on('oops_emoji_receive', (data) {
+      setState(() {
+        message_sender = data;
+        emoji_ID = 2;
+        has_emoji = true;
+      });
+      Future.delayed(Duration(seconds: 3), () {
+        setState(() {
+          has_emoji = false; // 3秒后将 has_emoji 的值从 true 转换为 false
+        });
       });
     });
   }
