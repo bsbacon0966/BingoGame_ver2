@@ -9,4 +9,4 @@ Version 2.0 is an improved version of the work [BingoGame---using-flutter-and-no
 - Making a video for ver2
 
 # Actual operation screen & English explanation video link.
-(https://www.youtube.com/watch?v=WQUq8-bHKJE)
+https://www.youtube.com/watch?v=WQUq8-bHKJE
