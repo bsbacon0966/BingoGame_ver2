@@ -1,7 +1,6 @@
 # BingoGame_ver2
 
-
-Version 2.0 is an improved version of the work BingoGame---using-flutter-and-node.js[ver1_project](https://github.com/bsbacon0966/BingoGame---using-flutter-and-node.js), with more features added.
+Version 2.0 is an improved version of the work BingoGame---using-flutter-and-node.js [version1_project](https://github.com/bsbacon0966/BingoGame---using-flutter-and-node.js), with more features added.
 - Adding better warning animation (using QuickAlert)
 - Adding button to translate the entire game into Chinese and English.
 - Making bingo card's button more 'circle'
