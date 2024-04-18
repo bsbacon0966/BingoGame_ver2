@@ -10,3 +10,5 @@ Version 2.0 is an improved version of the work [BingoGame---using-flutter-and-no
 
 # Actual operation screen & English explanation video link.
 https://www.youtube.com/watch?v=WQUq8-bHKJE
+# 標記
+資工二 411185038 陳子傑 製作
